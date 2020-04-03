@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # Using single quotes instead of double quotes to make it work with special-character passwords
+PHP_VERSION='7.2'
+PROJECT_GIT='[[PROJECT_GIT]]'
+PROJECT_NAME='[[PROJECT_NAME]]'
+
 PASSWORD='vagrant'
 PROJECTFOLDER='html'
-PHP_VERSION='7.2'
 
 # update / upgrade
 echo "Updating apt-get..."
@@ -33,7 +36,7 @@ apt update
 
 apt-get install -y php${PHP_VERSION}-mysql
 apt-get install -y php${PHP_VERSION}-common
-apt-get install -y php${PHP_VERSION}-mcrypt
+# apt-get install -y php${PHP_VERSION}-mcrypt
 apt-get install -y php${PHP_VERSION}-zip
 apt-get install -y php${PHP_VERSION}-pdo
 apt-get install -y php${PHP_VERSION}-mysqlnd
@@ -62,6 +65,9 @@ apt-get update
 echo "Installing MariaDB..."
 apt-get install -y mariadb-server
 
+echo "Installing composer..."
+apt-get -y install composer
+
 apt-get -y --fix-broken install
 
 # Nginx Config
@@ -74,3 +80,20 @@ rm -rf /etc/nginx/sites-enabled/default
 # Restarting Nginx for config to take effect
 echo "Restarting Nginx..."
 service nginx restart
+
+# Set up composer auth, ssh keys
+mkdir /home/vagrant/.composer/
+cp /var/www/config/id_rsa /home/vagrant/.ssh/id_rsa
+cp /var/www/config/id_rsa.pub /home/vagrant/.ssh/id_rsa.pub
+cp /var/www/config/auth.json /home/vagrant/.composer/auth.json
+
+# Import project
+mysql -u root -pvagrant -e "CREATE DATABASE IF NOT EXISTS ${PROJECT_NAME} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+
+eval $(ssh-agent)
+ssh-add /home/vagrant/.ssh/id_rsa
+ssh-keyscan bitbucket.org > /home/vagrant/.ssh/known_hosts
+
+cd /var/www/html/ && rm -rf ./* && git clone ${PROJECT_GIT} .
+composer install --working-dir="/var/www/html/"
+zcat /var/www/config/database.sql.gz | mysql -u root -pvagrant ${PROJECT_NAME}

@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
   config.vm.provider "virtualbox" do |vb|
     vb.gui = false
     vb.cpus = 4
-    vb.memory = "2048"
+    vb.memory = "4096"
     vb.customize ["modifyvm", :id, "--usb", "on"]
     vb.customize ["modifyvm", :id, "--usbehci", "off"]
   end
