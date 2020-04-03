@@ -1,13 +1,14 @@
 #!/bin/bash
 
-PROJECT_NAME='nordicagolf'
+PROJECT_NAME='[__PROJECT_NAME__]'
 
 cd /var/www/html/
 
 # Import database
 echo 'Importing database...'
-mysql -u root -pvagrant -e "CREATE DATABASE IF NOT EXISTS ${PROJECT_NAME} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
+mysql -u root -pvagrant ${PROJECT_NAME} -e "CREATE DATABASE IF NOT EXISTS ${PROJECT_NAME} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
 zcat /var/www/config/database.sql.gz | mysql -u root -pvagrant ${PROJECT_NAME}
+mysql -u root -pvagrant ${PROJECT_NAME} -e "UPDATE core_config_data SET value = 'http://${PROJECT_NAME}.vbox/' WHERE path LIKE '%/base_url%' AND scope = 'default'"
 
 # Composer packages
 echo 'Installing composer packages...'
