@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # Using single quotes instead of double quotes to make it work with special-character passwords
-PHP_VERSION='(PHP.VERSION)'
-PROJECT_NAME='(PROJECT_NAME)'
+PHP_VERSION='7.2'
 
 PASSWORD='vagrant'
 PROJECTFOLDER='html'
@@ -60,7 +59,7 @@ debconf-set-selections <<< "mysql-server mysql-server/root_password_again passwo
 
 echo "Updating apt-get..."
 apt-get update > /dev/null 2>&1
-
+ 
 echo "Installing MariaDB..."
 apt-get install -y mariadb-server > /dev/null 2>&1
 
@@ -80,7 +79,3 @@ rm -rf /etc/nginx/sites-enabled/default
 echo "Restarting Nginx..."
 service nginx restart > /dev/null 2>&1
 rm /var/www/html/index.nginx-debian.html
-
-# Import database
-mysql -u root -pvagrant -e "CREATE DATABASE IF NOT EXISTS ${PROJECT_NAME} DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
-zcat /var/www/config/database.sql.gz | mysql -u root -pvagrant ${PROJECT_NAME}
